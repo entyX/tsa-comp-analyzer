@@ -89,7 +89,27 @@
   .ctl.go:hover { filter: brightness(1.1); }
   .ctl.go.busy { opacity: .6; }
 
-  .note { font: 600 12px "JetBrains Mono", monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); margin: -18px 0 18px; min-height: 14px; }
+  .note { font: 600 12px "JetBrains Mono", monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); margin: -10px 0 18px; min-height: 14px; }
+
+  /* ---------- Filters ---------- */
+  .filters { display: flex; flex-wrap: wrap; gap: 10px; margin: -8px 0 24px; }
+  .flt {
+    display: inline-flex; align-items: stretch; border: 2px solid var(--ink); background: var(--card); color: var(--ink);
+    cursor: pointer; padding: 0; font: inherit; box-shadow: 3px 3px 0 var(--shadow); transition: transform .1s, box-shadow .1s;
+  }
+  .flt:not(.on):hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--shadow); }
+  .flt span { padding: 8px 12px; font: 700 12px "JetBrains Mono", monospace; letter-spacing: .06em; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+  .flt small { font-weight: 600; color: var(--ink-3); letter-spacing: .02em; text-transform: none; }
+  .flt b { border-left: 2px solid var(--ink); padding: 8px 10px; font: 800 13px "JetBrains Mono", monospace; min-width: 38px; text-align: center; }
+  .flt.on { background: var(--ink); color: var(--paper); transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shadow); }
+  .flt.on small { color: var(--ink-3); }
+  .flt.on b { border-color: var(--paper); }
+  .flt[data-f="competitive"].on { background: var(--signal); border-color: var(--ink); color: #fff; }
+  .flt[data-f="competitive"].on b { border-color: var(--ink); }
+  .flt[data-f="competitive"].on small { color: #ffd9c7; }
+  .lvl { width: 9px; height: 9px; border: 2px solid currentColor; flex-shrink: 0; }
+  .lvl.c { background: var(--signal); border-color: var(--signal); }
+  .lvl.m { background: currentColor; }
 
   /* ---------- Board ---------- */
   .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 22px; padding-bottom: 64px; }
@@ -99,8 +119,16 @@
     transition: transform .12s ease, box-shadow .12s ease;
   }
   .card:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--shadow); }
+  .card-title { cursor: pointer; }
+  .card-title:hover h2 { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  .expand {
+    border: 0; border-left: 2px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer;
+    width: 44px; display: grid; place-items: center; padding: 0;
+  }
+  .expand:hover { background: var(--ink); color: var(--paper); }
+  .comp-tag { display: inline-block; margin-left: 8px; background: var(--signal); color: #fff; padding: 1px 5px; font-weight: 700; }
 
-  .card-head { display: grid; grid-template-columns: 1fr auto; border-bottom: 2px solid var(--ink); }
+  .card-head { display: grid; grid-template-columns: 1fr auto auto; border-bottom: 2px solid var(--ink); }
   .card-title { padding: 12px 14px 12px; min-width: 0; }
   .idx { font: 600 11px "JetBrains Mono", monospace; color: var(--ink-3); letter-spacing: .06em; }
   .card-title h2 {
@@ -127,7 +155,8 @@
   }
   .team-body { padding: 11px 14px 12px 0; min-width: 0; }
   .tmeta { font: 600 10px "JetBrains Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 6px; display: flex; gap: 8px; align-items: center; }
-  .fresh { background: var(--signal); color: #fff; padding: 1px 5px; }
+  .fresh { background: var(--signal); color: #fff; padding: 1px 5px; font-style: normal; }
+  body:has(dialog[open]) { overflow: hidden; }
   .names { display: flex; flex-wrap: wrap; gap: 3px 14px; font-size: 14.5px; font-weight: 500; line-height: 1.35; }
   .names span { white-space: nowrap; }
   .names mark { background: var(--hilite); color: inherit; padding: 0 2px; box-decoration-break: clone; }
@@ -141,6 +170,57 @@
 
   .msg { grid-column: 1 / -1; border: 2px dashed var(--ink-3); padding: 72px 20px; text-align: center; font: 600 13px "JetBrains Mono", monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); }
   .ghost { height: var(--card-h); border: 2px solid var(--rule); background: repeating-linear-gradient(-45deg, transparent 0 10px, var(--rule) 10px 11px); opacity: .6; }
+
+  /* ---------- Modal ---------- */
+  dialog.modal {
+    width: min(1160px, calc(100vw - 48px)); height: min(860px, calc(100vh - 48px)); max-width: none; max-height: none;
+    padding: 0; border: 2px solid var(--ink); background: var(--paper); color: var(--ink);
+    box-shadow: 10px 10px 0 var(--shadow); overflow: hidden;
+  }
+  dialog.modal[open] { display: flex; flex-direction: column; animation: pop .16s ease-out; }
+  dialog.modal::backdrop { background: rgba(10,10,10,.55); backdrop-filter: grayscale(1); }
+  @keyframes pop { from { transform: translate(10px, 10px); opacity: 0; } }
+  .m-head { display: grid; grid-template-columns: 1fr auto; border-bottom: 2px solid var(--ink); background: var(--card); flex-shrink: 0; }
+  .m-title { padding: 22px 26px 20px; min-width: 0; }
+  .m-title .idx { font-size: 12px; }
+  .m-title h2 {
+    margin: 6px 0 0; font-weight: 900; text-transform: uppercase; font-variation-settings: "wdth" 90;
+    font-size: clamp(28px, 4.4vw, 56px); line-height: .92; letter-spacing: -.025em;
+  }
+  .m-close {
+    border: 0; border-left: 2px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer;
+    width: 72px; font: 400 34px/1 "JetBrains Mono", monospace;
+  }
+  .m-close:hover { background: var(--signal); color: #fff; }
+  .m-stats { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 2px solid var(--ink); background: var(--card); flex-shrink: 0; }
+  .m-stats div { padding: 12px 26px; border-left: 2px solid var(--ink); }
+  .m-stats div:first-child { border-left: 0; }
+  .m-stats b { display: block; font: 800 30px/1 "JetBrains Mono", monospace; letter-spacing: -.04em; }
+  .m-stats span { font: 700 10.5px "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+  .m-stats .c { background: var(--signal); color: #fff; }
+  .m-stats .c span { color: #fff; }
+  .m-body { flex: 1; overflow-y: auto; padding: 26px; scrollbar-width: thin; scrollbar-color: var(--ink) transparent; }
+  .m-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; align-items: start; }
+  .m-team { background: var(--card); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--shadow); }
+  .m-team header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ink); padding: 10px 14px; }
+  .m-team header b { font: 800 22px/1 "JetBrains Mono", monospace; letter-spacing: -.04em; }
+  .m-team header span { font: 600 10.5px "JetBrains Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); display: flex; gap: 8px; align-items: center; }
+  .m-team ol { list-style: none; margin: 0; padding: 4px 0; counter-reset: m; }
+  .m-team li { counter-increment: m; padding: 8px 14px; font-size: 16px; font-weight: 600; display: flex; gap: 12px; align-items: baseline; border-bottom: 1px solid var(--rule); }
+  .m-team li:last-child { border-bottom: 0; }
+  .m-team li::before { content: counter(m); font: 600 11px "JetBrains Mono", monospace; color: var(--ink-3); width: 12px; }
+  .m-team li mark { background: var(--hilite); color: inherit; padding: 0 2px; }
+
+  @media (max-width: 760px) {
+    dialog.modal { width: 100vw; height: 100dvh; border: 0; box-shadow: none; }
+    .m-title { padding: 16px 18px; }
+    .m-close { width: 60px; }
+    .m-stats { grid-template-columns: repeat(2, 1fr); }
+    .m-stats div { padding: 10px 18px; }
+    .m-stats div:nth-child(3) { border-left: 0; }
+    .m-stats div:nth-child(n+3) { border-top: 2px solid var(--ink); }
+    .m-body { padding: 18px; }
+  }
 
   @media (max-width: 760px) {
     .masthead { grid-template-columns: 1fr; padding: 28px 0 22px; }
@@ -190,11 +270,26 @@
 </div>
 
 <div class="wrap">
+  <div class="filters" id="filters">
+    <button class="flt on" data-f="all" type="button"><span>All events</span><b id="fAll">--</b></button>
+    <button class="flt" data-f="competitive" type="button"><span><i class="lvl c"></i>Competitive <small>5+ teams</small></span><b id="fCompetitive">--</b></button>
+    <button class="flt" data-f="contested" type="button"><span><i class="lvl m"></i>Contested <small>2–4 teams</small></span><b id="fContested">--</b></button>
+    <button class="flt" data-f="uncontested" type="button"><span><i class="lvl"></i>Uncontested <small>1 team</small></span><b id="fUncontested">--</b></button>
+  </div>
   <div class="note" id="note"></div>
   <main class="board" id="board">
     <div class="ghost"></div><div class="ghost"></div><div class="ghost"></div><div class="ghost"></div>
   </main>
 </div>
+
+<dialog class="modal" id="modal" aria-labelledby="mTitle">
+  <div class="m-head">
+    <div class="m-title"><div class="idx" id="mIdx"></div><h2 id="mTitle"></h2></div>
+    <button class="m-close" id="mClose" type="button" aria-label="Close">×</button>
+  </div>
+  <div class="m-stats" id="mStats"></div>
+  <div class="m-body"><div class="m-grid" id="mGrid"></div></div>
+</dialog>
 
 <script>
 const SHEET_ID = '16X65GLzIA5s6ezHNIKV4trU3MqDy9xNts94ChPI_cTg';
@@ -207,6 +302,11 @@ let seenTeams = null;     // team keys from previous load, to mark new ones
 let newTeams = new Set();
 let lastSync = null;
 let sortMode = 'az';
+let filterMode = 'all';   // all | competitive | contested | uncontested
+let openKey = null;       // event shown in the modal
+
+const COMPETITIVE_MIN = 5;
+const level = e => e.teams.length >= COMPETITIVE_MIN ? 'competitive' : e.teams.length >= 2 ? 'contested' : 'uncontested';
 
 // Load the sheet via a <script> tag (JSONP) — not subject to CORS, so it works
 // from a local file as well as any web host.
@@ -248,7 +348,7 @@ function build(rows) {
     const members = memberCols.map(i => clean(r[i])).filter(Boolean);
     if (!members.length) continue;
     const evKey = norm(ev);
-    if (!map.has(evKey)) map.set(evKey, { name: ev, teams: [], keys: new Set() });
+    if (!map.has(evKey)) map.set(evKey, { name: ev, key: evKey, teams: [], keys: new Set() });
     const e = map.get(evKey);
     // Skip duplicate submissions of the exact same team
     const key = evKey + '|' + members.map(norm).sort().join('|');
@@ -315,8 +415,13 @@ function render() {
   $('sPeople').textContent = pad(people.size);
   const maxTeams = Math.max(0, ...events.map(e => e.teams.length));
 
+  const counts = { all: events.length, competitive: 0, contested: 0, uncontested: 0 };
+  for (const e of events) counts[level(e)]++;
+  for (const k in counts) $('f' + k[0].toUpperCase() + k.slice(1)).textContent = pad(counts[k]);
+
   let list = events.map((e, i) => {
     const idx = i + 1;
+    if (filterMode !== 'all' && level(e) !== filterMode) return null;
     if (!q || norm(e.name).includes(q)) return { ...e, idx, shown: e.teams };
     const shown = e.teams.filter(t => t.members.some(m => norm(m).includes(q)));
     return shown.length ? { ...e, idx, shown } : null;
@@ -324,10 +429,15 @@ function render() {
 
   if (sortMode === 'teams') list.sort((a, b) => b.teams.length - a.teams.length || a.name.localeCompare(b.name));
 
-  $('note').textContent = q ? `${list.length} event${list.length === 1 ? '' : 's'} match “${$('q').value.trim()}”` : '';
+  const notes = [];
+  if (filterMode !== 'all') notes.push(`Showing ${filterMode} events`);
+  if (q) notes.push(`${list.length} event${list.length === 1 ? '' : 's'} match “${$('q').value.trim()}”`);
+  $('note').textContent = notes.join(' · ');
+
+  if (openKey) renderModal();
 
   if (!list.length) {
-    $('board').innerHTML = `<div class="msg">${events.length ? 'Nothing matches that search' : 'No teams signed up yet'}</div>`;
+    $('board').innerHTML = `<div class="msg">${!events.length ? 'No teams signed up yet' : q ? 'Nothing matches that search' : `No ${filterMode} events right now`}</div>`;
     return;
   }
 
@@ -335,13 +445,16 @@ function render() {
     const students = new Set(e.teams.flatMap(t => t.members.map(norm))).size;
     const hot = e.teams.length === maxTeams && maxTeams > 1;
     return `
-    <article class="card${hot ? ' hot' : ''}">
+    <article class="card${hot ? ' hot' : ''}" data-key="${esc(e.key)}">
       <div class="card-head">
-        <div class="card-title">
-          <div class="idx">EVT/${pad(e.idx)}</div>
+        <div class="card-title" data-open>
+          <div class="idx">EVT/${pad(e.idx)}${level(e) === 'competitive' ? '<span class="comp-tag">Competitive</span>' : ''}</div>
           <h2 title="${esc(e.name)}">${esc(e.name)}</h2>
         </div>
         <div class="tally"><b>${pad(e.teams.length)}</b><span>${e.teams.length === 1 ? 'Team' : 'Teams'}</span></div>
+        <button class="expand" data-open type="button" aria-label="Expand ${esc(e.name)}" title="Expand">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>
+        </button>
       </div>
       <div class="teams">
         ${e.shown.map(t => `
@@ -362,6 +475,53 @@ function render() {
     const t = card.querySelector('.teams');
     card.classList.toggle('overflow', t.scrollHeight > t.clientHeight + 2);
   }
+}
+
+// ---------- Expanded event modal ----------
+function openModal(key) {
+  openKey = key;
+  renderModal();
+  if (!$('modal').open) $('modal').showModal();
+  $('modal').querySelector('.m-body').scrollTop = 0;
+}
+
+function renderModal() {
+  const i = events.findIndex(e => e.key === openKey);
+  if (i < 0) { $('modal').close(); return; }
+  const e = events[i];
+  const q = norm($('q').value);
+  const students = new Set(e.teams.flatMap(t => t.members.map(norm))).size;
+  const avg = (e.teams.reduce((n, t) => n + t.members.length, 0) / e.teams.length).toFixed(1);
+  const lv = level(e);
+
+  $('mIdx').innerHTML = `EVT/${pad(i + 1)}${lv === 'competitive' ? '<span class="comp-tag">Competitive</span>' : ''}`;
+  $('mTitle').textContent = e.name;
+  $('mStats').innerHTML = `
+    <div class="${lv === 'competitive' ? 'c' : ''}"><b>${pad(e.teams.length)}</b><span>Teams</span></div>
+    <div><b>${pad(students)}</b><span>Students</span></div>
+    <div><b>${avg}</b><span>Avg team size</span></div>
+    <div><b>${lv === 'competitive' ? 'HIGH' : lv === 'contested' ? 'MED' : 'LOW'}</b><span>Competition</span></div>`;
+  $('mGrid').innerHTML = e.teams.map((t, n) => `
+    <section class="m-team">
+      <header><b>T${pad(n + 1)}</b><span>${newTeams.has(t.key) ? '<i class="fresh">New</i>' : ''}${t.members.length === 1 ? 'Solo' : t.members.length + ' members'}</span></header>
+      <ol>${t.members.map(m => `<li>${markHit(m, q)}</li>`).join('')}</ol>
+    </section>`).join('');
+}
+
+$('board').addEventListener('click', ev => {
+  if (!ev.target.closest('[data-open]')) return;
+  openModal(ev.target.closest('.card').dataset.key);
+});
+$('mClose').addEventListener('click', () => $('modal').close());
+$('modal').addEventListener('click', ev => { if (ev.target === $('modal')) $('modal').close(); });
+$('modal').addEventListener('close', () => { openKey = null; });
+
+for (const b of document.querySelectorAll('[data-f]')) {
+  b.addEventListener('click', () => {
+    filterMode = b.dataset.f;
+    for (const x of document.querySelectorAll('[data-f]')) x.classList.toggle('on', x === b);
+    render();
+  });
 }
 
 $('q').addEventListener('input', render);
