@@ -306,6 +306,16 @@
     #catFilters .flt { flex-shrink: 0; }
   }
 </style>
+<!-- Vercel Web Analytics (only served on the Vercel deployment, so skip it elsewhere e.g. GitHub Pages) -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+  if (location.protocol.startsWith('http') && !location.hostname.endsWith('github.io')) {
+    const s = document.createElement('script');
+    s.defer = true;
+    s.src = '/_vercel/insights/script.js';
+    document.head.appendChild(s);
+  }
+</script>
 </head>
 <body data-view="signups">
 <div class="topbar">
