@@ -441,7 +441,9 @@ function buildLimits(rows) {
   for (const r of rows.slice(1)) {
     if (!clean(r[ev])) continue;
     const n = parseInt(r[lim], 10);
-    map.set(matchKey(r[ev]), { name: clean(r[ev]), limit: Number.isFinite(n) ? n : null, type: clean(r[type]), size: clean(r[size]) });
+    // "Unlimited, 5 Max advance" → no chapter cap (never needs a tiebreaker)
+    const limit = /unlimited/i.test(r[lim]) ? Infinity : Number.isFinite(n) ? n : null;
+    map.set(matchKey(r[ev]), { name: clean(r[ev]), limit, limitText: clean(r[lim]), type: clean(r[type]), size: clean(r[size]) });
   }
   return map;
 }
@@ -467,10 +469,46 @@ let statFilter = 'any';
 let sizeFilter = 0;       // 0 = any; otherwise events that allow a team of exactly this many people
 let view = 'signups';
 
+// Prefer the raw CSV export: the gviz feed guesses a type per column and blanks out
+// cells that don't fit (e.g. "2" in a "# of members" column it decided holds dates).
+// The export needs CORS, which works on a real host but not from a local file,
+// so fall back to gviz there.
+async function fetchSheet(gid) {
+  if (location.protocol.startsWith('http')) {
+    try {
+      const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv${gid ? '&gid=' + gid : ''}&_=${Date.now()}`, { cache: 'no-store' });
+      if (res.ok) {
+        const rows = parseCSV(await res.text());
+        if (rows.length && rows[0].length > 1) return rows;
+      }
+    } catch { /* fall through to gviz */ }
+  }
+  return fetchSheetJsonp(gid);
+}
+
+// RFC 4180 CSV parser (handles quoted commas/newlines)
+function parseCSV(text) {
+  const rows = []; let row = [], field = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) {
+      if (c === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+      else field += c;
+    } else if (c === '"') q = true;
+    else if (c === ',') { row.push(field); field = ''; }
+    else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i++;
+      row.push(field); rows.push(row); row = []; field = '';
+    } else field += c;
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
 // Load the sheet via a <script> tag (JSONP) — not subject to CORS, so it works
 // from a local file as well as any web host.
 let reqId = 0;
-function fetchSheet(gid) {
+function fetchSheetJsonp(gid) {
   return new Promise((resolve, reject) => {
     const cb = `__sheet_${++reqId}_${Date.now()}`;
     const s = document.createElement('script');
@@ -632,7 +670,7 @@ function renderBoard() {
           <div class="idx">EVT/${pad(e.idx)}${e.size ? `<span class="size" title="Team size: ${sizeLabel(e.size)}">${sizeShort(e.size)}</span>` : ''}${over ? '<span class="comp-tag">Tiebreaker</span>' : ''}</div>
           <h2 title="${esc(e.name)}">${esc(e.name)}</h2>
         </div>
-        <div class="tally" title="${e.limit != null ? `${e.teams.length} teams for ${e.limit} state spot${e.limit === 1 ? '' : 's'}` : 'No state limit listed'}"><b>${pad(e.teams.length)}</b><span>${e.limit != null ? `of ${e.limit} max` : e.teams.length === 1 ? 'Team' : 'Teams'}</span></div>
+        <div class="tally" title="${e.limit != null ? `${e.teams.length} teams for ${e.limit} state spot${e.limit === 1 ? '' : 's'}` : 'No state limit listed'}"><b>${pad(e.teams.length)}</b><span>${e.limit === Infinity ? 'No cap' : e.limit != null ? `of ${e.limit} max` : e.teams.length === 1 ? 'Team' : 'Teams'}</span></div>
         <button class="expand" data-open type="button" aria-label="Expand ${esc(e.name)}" title="Expand">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>
         </button>
@@ -686,7 +724,7 @@ function renderModal() {
   $('mDesc').textContent = nat?.d || '';
   $('mStats').innerHTML = `
     <div class="${over ? 'c' : ''}"><b>${pad(teams.length)}</b><span>Teams signed up</span></div>
-    <div><b>${limit != null ? pad(limit) : '—'}</b><span>State limit</span></div>
+    <div><b>${limit === Infinity ? '∞' : limit != null ? pad(limit) : '—'}</b><span>State limit</span></div>
     <div><b>${size ? sizeShort(size) : '—'}</b><span>Team size</span></div>
     <div><b>${pad(students)}</b><span>Students</span></div>`;
   const spots = n => `${n} state spot${n === 1 ? '' : 's'}`;
@@ -697,6 +735,8 @@ function renderModal() {
     ? `<b>Tiebreakers</b><p>${teams.length} teams signed up for ${spots(limit)}. These teams will have to compete at tiebreakers.</p>`
     : limit == null
     ? `<b>No limit</b><p>No state limit is listed for this event in the sheet.</p>`
+    : limit === Infinity
+    ? `<b>No cap</b><p>${esc(info.limitText)}. Any number of teams can enter, so no tiebreaker is needed.</p>`
     : teams.length === 1
     ? `<b>Uncontested</b><p>Only one team has signed up, so no tiebreaker is needed.</p>`
     : `<b>Within limit</b><p>${teams.length} of ${spots(limit)} filled, so no tiebreaker is needed.</p>`;
@@ -773,7 +813,7 @@ function renderCatalog() {
           </div>
           <div class="ev-foot">
             ${x.teams ? `<span>${pad(x.teams)} team${x.teams === 1 ? '' : 's'} signed up</span>` : '<span class="none">No sign-ups yet</span>'}
-            <span>${x.limit != null ? `Limit ${x.limit}` : ''}</span>
+            <span>${x.limit === Infinity ? 'No cap' : x.limit != null ? `Limit ${x.limit}` : ''}</span>
           </div>
         </button>`).join('')}
       </div>
