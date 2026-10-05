@@ -107,6 +107,7 @@
   .flt[data-f="competitive"].on { background: var(--signal); border-color: var(--ink); color: #fff; }
   .flt[data-f="competitive"].on b { border-color: var(--ink); }
   .flt[data-f="competitive"].on small { color: #ffd9c7; }
+  .flt-label { align-self: center; font: 800 11px "JetBrains Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); margin-right: 2px; }
   .lvl { width: 9px; height: 9px; border: 2px solid currentColor; flex-shrink: 0; }
   .lvl.c { background: var(--signal); border-color: var(--signal); }
   .lvl.m { background: currentColor; }
@@ -350,6 +351,7 @@
     <button class="flt" data-s="open" type="button"><span><i class="lvl"></i>No sign-ups</span><b id="sOpen">--</b></button>
     <button class="flt" data-s="over" type="button"><span><i class="lvl c"></i>Over limit</span><b id="sOver">--</b></button>
   </div>
+  <div class="filters" id="sizeFilters"></div>
   <div class="note" id="catNote"></div>
   <main id="catalog"></main>
   <div class="source">Event list &amp; descriptions: <a href="https://tsaweb.org/competitions-programs/tsa/high-school-competitions" target="_blank" rel="noopener">tsaweb.org — High School Competitive Events</a> (2027 &amp; 2028 national conferences). Team sizes &amp; limits from the chapter sheet.</div>
@@ -452,6 +454,7 @@ const NATIONAL_KEYS = new Map(NATIONAL.map(ev => [matchKey(ev.n), ev]));
 const CATEGORIES = [...new Set(NATIONAL.flatMap(ev => ev.c))].sort();
 let catFilter = 'all';
 let statFilter = 'any';
+let sizeFilter = 0;       // 0 = any; otherwise events that allow a team of exactly this many people
 let view = 'signups';
 
 // Load the sheet via a <script> tag (JSONP) — not subject to CORS, so it works
@@ -726,9 +729,19 @@ function renderCatalog() {
   $('sOpen').textContent = pad(all.filter(x => x.teams === 0).length);
   $('sOver').textContent = pad(all.filter(x => x.over).length);
 
-  const shown = all.filter(x => status(x) && (catFilter === 'all' || x.cats.includes(catFilter))
+  const fits = (x, n) => x.size && x.size.min <= n && n <= x.size.max;
+  const maxSize = Math.max(1, ...all.map(x => x.size?.max || 0));
+  if (sizeFilter > maxSize) sizeFilter = 0;
+  $('sizeFilters').innerHTML = `<span class="flt-label">Team of</span>` +
+    [[0, 'Any'], ...Array.from({ length: maxSize }, (_, i) => [i + 1, i === 0 ? '1 · Solo' : String(i + 1)])]
+      .map(([n, label]) => `<button class="flt${sizeFilter === n ? ' on' : ''}" data-z="${n}" type="button"><span>${label}</span>${n ? `<b>${pad(all.filter(x => fits(x, n)).length)}</b>` : ''}</button>`).join('');
+
+  const shown = all.filter(x => status(x) && (!sizeFilter || fits(x, sizeFilter)) && (catFilter === 'all' || x.cats.includes(catFilter))
     && (!q || norm(x.name).includes(q) || norm(x.desc).includes(q) || x.cats.some(c => norm(c).includes(q))));
-  $('catNote').textContent = q ? `${shown.length} event${shown.length === 1 ? '' : 's'} match “${$('q').value.trim()}”` : '';
+  $('catNote').textContent = [
+    sizeFilter && `${shown.length} event${shown.length === 1 ? '' : 's'} allow a team of ${sizeFilter} (events with no size listed are hidden)`,
+    q && `${shown.length} event${shown.length === 1 ? '' : 's'} match “${$('q').value.trim()}”`,
+  ].filter(Boolean).join(' · ');
 
   if (!shown.length) { $('catalog').innerHTML = '<div class="msg">No events match</div>'; return; }
 
@@ -772,6 +785,10 @@ $('board').addEventListener('click', ev => {
 $('catalog').addEventListener('click', ev => {
   const tile = ev.target.closest('.ev');
   if (tile) openModal(tile.dataset.key);
+});
+$('sizeFilters').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-z]');
+  if (b) { sizeFilter = +b.dataset.z; renderCatalog(); }
 });
 $('catFilters').addEventListener('click', ev => {
   const b = ev.target.closest('[data-c]');
