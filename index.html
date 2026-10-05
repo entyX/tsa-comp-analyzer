@@ -126,7 +126,18 @@
     width: 44px; display: grid; place-items: center; padding: 0;
   }
   .expand:hover { background: var(--ink); color: var(--paper); }
-  .comp-tag { display: inline-block; margin-left: 8px; background: var(--signal); color: #fff; padding: 1px 5px; font-weight: 700; }
+  .comp-tag { margin-left: 8px; color: var(--signal); font-weight: 800; }
+  .comp-tag::before { content: "▲ "; font-size: .85em; }
+  .card.over .tally { background: var(--signal); color: #fff; }
+  .card.over .tally span { color: #fff; }
+
+  .disclaimer {
+    display: flex; gap: 14px; align-items: baseline; margin: -8px 0 24px; padding: 12px 16px;
+    background: var(--card); border: 2px solid var(--ink); border-left: 8px solid var(--signal);
+  }
+  .disclaimer[hidden] { display: none; }
+  .disclaimer b { font: 800 11px "JetBrains Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--signal); white-space: nowrap; }
+  .disclaimer p { margin: 0; font-size: 14.5px; font-weight: 500; line-height: 1.45; }
 
   .card-head { display: grid; grid-template-columns: 1fr auto auto; border-bottom: 2px solid var(--ink); }
   .card-title { padding: 12px 14px 12px; min-width: 0; }
@@ -142,8 +153,6 @@
   }
   .tally b { font: 800 30px/1 "JetBrains Mono", monospace; letter-spacing: -.05em; }
   .tally span { font: 700 9.5px "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); margin-top: 3px; }
-  .card.hot .tally { background: var(--signal); color: #fff; }
-  .card.hot .tally span { color: #fff; }
 
   .teams { flex: 1; overflow-y: auto; min-height: 0; position: relative; scrollbar-width: thin; scrollbar-color: var(--ink) transparent; }
   .teams::-webkit-scrollbar { width: 6px; }
@@ -199,6 +208,11 @@
   .m-stats span { font: 700 10.5px "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
   .m-stats .c { background: var(--signal); color: #fff; }
   .m-stats .c span { color: #fff; }
+  .m-alert { display: flex; gap: 14px; align-items: baseline; padding: 12px 26px; border-bottom: 2px solid var(--ink); flex-shrink: 0; }
+  .m-alert b { font: 800 11px "JetBrains Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2); white-space: nowrap; }
+  .m-alert p { margin: 0; font-size: 15px; font-weight: 500; line-height: 1.45; }
+  .m-alert.over { background: var(--signal); color: #fff; }
+  .m-alert.over b { color: #fff; }
   .m-body { flex: 1; overflow-y: auto; padding: 26px; scrollbar-width: thin; scrollbar-color: var(--ink) transparent; }
   .m-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; align-items: start; }
   .m-team { background: var(--card); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--shadow); }
@@ -220,6 +234,7 @@
     .m-stats div:nth-child(3) { border-left: 0; }
     .m-stats div:nth-child(n+3) { border-top: 2px solid var(--ink); }
     .m-body { padding: 18px; }
+    .m-alert { padding: 10px 18px; }
   }
 
   @media (max-width: 760px) {
@@ -272,9 +287,13 @@
 <div class="wrap">
   <div class="filters" id="filters">
     <button class="flt on" data-f="all" type="button"><span>All events</span><b id="fAll">--</b></button>
-    <button class="flt" data-f="competitive" type="button"><span><i class="lvl c"></i>Competitive <small>5+ teams</small></span><b id="fCompetitive">--</b></button>
-    <button class="flt" data-f="contested" type="button"><span><i class="lvl m"></i>Contested <small>2–4 teams</small></span><b id="fContested">--</b></button>
+    <button class="flt" data-f="competitive" type="button"><span><i class="lvl c"></i>Competitive <small>over state limit</small></span><b id="fCompetitive">--</b></button>
+    <button class="flt" data-f="contested" type="button"><span><i class="lvl m"></i>Contested <small>within limit</small></span><b id="fContested">--</b></button>
     <button class="flt" data-f="uncontested" type="button"><span><i class="lvl"></i>Uncontested <small>1 team</small></span><b id="fUncontested">--</b></button>
+  </div>
+  <div class="disclaimer" id="disc" hidden>
+    <b>Heads up</b>
+    <p>These events have more teams signed up than the state limit allows per chapter. Teams in these events will have to compete at tiebreakers for a spot.</p>
   </div>
   <div class="note" id="note"></div>
   <main class="board" id="board">
@@ -288,6 +307,7 @@
     <button class="m-close" id="mClose" type="button" aria-label="Close">×</button>
   </div>
   <div class="m-stats" id="mStats"></div>
+  <div class="m-alert" id="mAlert"></div>
   <div class="m-body"><div class="m-grid" id="mGrid"></div></div>
 </dialog>
 
@@ -305,13 +325,35 @@ let sortMode = 'az';
 let filterMode = 'all';   // all | competitive | contested | uncontested
 let openKey = null;       // event shown in the modal
 
-const COMPETITIVE_MIN = 5;
-const level = e => e.teams.length >= COMPETITIVE_MIN ? 'competitive' : e.teams.length >= 2 ? 'contested' : 'uncontested';
+// Second tab of the sheet: per-event state limits ("State Limit (per Chapter)")
+const LIMITS_GID = '1819135025';
+let limits = new Map();   // matchKey -> { limit, type, size }
+
+// Competitive = more teams than the state limit (tiebreakers needed),
+// uncontested = a single team, contested = everything in between.
+const level = e => e.limit != null && e.teams.length > e.limit ? 'competitive'
+  : e.teams.length === 1 ? 'uncontested' : 'contested';
+
+// Loose name match so "Artificial Intelligence (AI)" == "Artificial Intelligence"
+const matchKey = s => clean(s).toLowerCase().replace(/\(.*?\)/g, '').replace(/&/g, 'and').replace(/[^a-z0-9]/g, '');
+
+function buildLimits(rows) {
+  const header = rows[0].map(h => clean(h).toLowerCase());
+  const col = re => header.findIndex(h => re.test(h));
+  const ev = col(/^event/), lim = col(/limit/), type = col(/^type/), size = col(/members/);
+  const map = new Map();
+  for (const r of rows.slice(1)) {
+    if (!clean(r[ev])) continue;
+    const n = parseInt(r[lim], 10);
+    map.set(matchKey(r[ev]), { limit: Number.isFinite(n) ? n : null, type: clean(r[type]), size: clean(r[size]) });
+  }
+  return map;
+}
 
 // Load the sheet via a <script> tag (JSONP) — not subject to CORS, so it works
 // from a local file as well as any web host.
 let reqId = 0;
-function fetchSheet() {
+function fetchSheet(gid) {
   return new Promise((resolve, reject) => {
     const cb = `__sheet_${++reqId}_${Date.now()}`;
     const s = document.createElement('script');
@@ -327,7 +369,7 @@ function fetchSheet() {
       ]);
     };
     s.onerror = () => { done(); reject(new Error('network error — is the sheet shared publicly?')); };
-    s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1&_=${Date.now()}`;
+    s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1${gid ? '&gid=' + gid : ''}&_=${Date.now()}`;
     document.head.appendChild(s);
   });
 }
@@ -361,9 +403,10 @@ function build(rows) {
 
 async function load(manual = false) {
   if (manual) { $('refresh').classList.add('busy'); $('status').textContent = 'Syncing'; }
-  let rows;
+  let rows, limitRows;
   try {
-    rows = await fetchSheet();
+    // Limits tab failing shouldn't take the board down — keep the last known limits
+    [rows, limitRows] = await Promise.all([fetchSheet(), fetchSheet(LIMITS_GID).catch(() => null)]);
   } catch (err) {
     $('blip').classList.add('err');
     $('status').textContent = 'Signal lost — retrying';
@@ -375,10 +418,16 @@ async function load(manual = false) {
   $('refresh').classList.remove('busy');
   lastSync = new Date();
 
-  const raw = JSON.stringify(rows);
+  const raw = JSON.stringify([rows, limitRows]);
   if (raw !== lastRaw) {
     lastRaw = raw;
+    if (limitRows) limits = buildLimits(limitRows);
     events = build(rows);
+    for (const e of events) {
+      const info = limits.get(matchKey(e.name));
+      e.limit = info?.limit ?? null;
+      e.info = info || null;
+    }
     const keys = new Set(events.flatMap(e => e.teams.map(t => t.key)));
     if (seenTeams) for (const k of keys) if (!seenTeams.has(k)) newTeams.add(k);
     seenTeams = keys;
@@ -413,7 +462,7 @@ function render() {
   $('sEvents').textContent = pad(events.length);
   $('sTeams').textContent = pad(teamCount);
   $('sPeople').textContent = pad(people.size);
-  const maxTeams = Math.max(0, ...events.map(e => e.teams.length));
+  $('disc').hidden = filterMode !== 'competitive';
 
   const counts = { all: events.length, competitive: 0, contested: 0, uncontested: 0 };
   for (const e of events) counts[level(e)]++;
@@ -443,15 +492,15 @@ function render() {
 
   $('board').innerHTML = list.map(e => {
     const students = new Set(e.teams.flatMap(t => t.members.map(norm))).size;
-    const hot = e.teams.length === maxTeams && maxTeams > 1;
+    const over = level(e) === 'competitive';
     return `
-    <article class="card${hot ? ' hot' : ''}" data-key="${esc(e.key)}">
+    <article class="card${over ? ' over' : ''}" data-key="${esc(e.key)}">
       <div class="card-head">
         <div class="card-title" data-open>
-          <div class="idx">EVT/${pad(e.idx)}${level(e) === 'competitive' ? '<span class="comp-tag">Competitive</span>' : ''}</div>
+          <div class="idx">EVT/${pad(e.idx)}${over ? '<span class="comp-tag">Tiebreaker</span>' : ''}</div>
           <h2 title="${esc(e.name)}">${esc(e.name)}</h2>
         </div>
-        <div class="tally"><b>${pad(e.teams.length)}</b><span>${e.teams.length === 1 ? 'Team' : 'Teams'}</span></div>
+        <div class="tally" title="${e.limit != null ? `${e.teams.length} teams for ${e.limit} state spot${e.limit === 1 ? '' : 's'}` : 'No state limit listed'}"><b>${pad(e.teams.length)}</b><span>${e.limit != null ? `of ${e.limit} max` : e.teams.length === 1 ? 'Team' : 'Teams'}</span></div>
         <button class="expand" data-open type="button" aria-label="Expand ${esc(e.name)}" title="Expand">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/></svg>
         </button>
@@ -491,16 +540,26 @@ function renderModal() {
   const e = events[i];
   const q = norm($('q').value);
   const students = new Set(e.teams.flatMap(t => t.members.map(norm))).size;
-  const avg = (e.teams.reduce((n, t) => n + t.members.length, 0) / e.teams.length).toFixed(1);
   const lv = level(e);
+  const over = lv === 'competitive';
+  const format = e.info ? [e.info.type, e.info.size && e.info.size + ' members'].filter(Boolean).join(' · ') : '';
 
-  $('mIdx').innerHTML = `EVT/${pad(i + 1)}${lv === 'competitive' ? '<span class="comp-tag">Competitive</span>' : ''}`;
+  $('mIdx').innerHTML = `EVT/${pad(i + 1)}${format ? ' · ' + esc(format) : ''}${over ? '<span class="comp-tag">Tiebreaker</span>' : ''}`;
   $('mTitle').textContent = e.name;
   $('mStats').innerHTML = `
-    <div class="${lv === 'competitive' ? 'c' : ''}"><b>${pad(e.teams.length)}</b><span>Teams</span></div>
+    <div class="${over ? 'c' : ''}"><b>${pad(e.teams.length)}</b><span>Teams signed up</span></div>
+    <div><b>${e.limit != null ? pad(e.limit) : '—'}</b><span>State limit</span></div>
     <div><b>${pad(students)}</b><span>Students</span></div>
-    <div><b>${avg}</b><span>Avg team size</span></div>
-    <div><b>${lv === 'competitive' ? 'HIGH' : lv === 'contested' ? 'MED' : 'LOW'}</b><span>Competition</span></div>`;
+    <div><b>${lv === 'competitive' ? 'OVER' : lv === 'contested' ? 'OK' : 'SOLO'}</b><span>${lv}</span></div>`;
+  const alert = over
+    ? `<b>Tiebreakers</b><p>${e.teams.length} teams signed up for ${e.limit} state spot${e.limit === 1 ? '' : 's'}. These teams will have to compete at tiebreakers.</p>`
+    : e.limit == null
+    ? `<b>No limit</b><p>No state limit is listed for this event in the sheet.</p>`
+    : lv === 'uncontested'
+    ? `<b>Uncontested</b><p>Only one team has signed up, so no tiebreaker is needed.</p>`
+    : `<b>Within limit</b><p>${e.teams.length} of ${e.limit} state spots filled, so no tiebreaker is needed.</p>`;
+  $('mAlert').className = 'm-alert' + (over ? ' over' : '');
+  $('mAlert').innerHTML = alert;
   $('mGrid').innerHTML = e.teams.map((t, n) => `
     <section class="m-team">
       <header><b>T${pad(n + 1)}</b><span>${newTeams.has(t.key) ? '<i class="fresh">New</i>' : ''}${t.members.length === 1 ? 'Solo' : t.members.length + ' members'}</span></header>
