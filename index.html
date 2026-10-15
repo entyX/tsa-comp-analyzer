@@ -414,6 +414,8 @@ let openKey = null;       // event shown in the modal
 // Second tab of the sheet: per-event state limits ("State Limit (per Chapter)")
 const LIMITS_GID = '1819135025';
 let limits = new Map();   // matchKey -> { limit, type, size }
+// Per-chapter limits that override whatever the sheet says
+const LIMIT_OVERRIDES = { 'Structural Design and Engineering': 5 };
 
 // Competitive = more teams than the state limit (tiebreakers needed),
 // uncontested = a single team, contested = everything in between.
@@ -444,6 +446,10 @@ function buildLimits(rows) {
     // "Unlimited, 5 Max advance" → no chapter cap (never needs a tiebreaker)
     const limit = /unlimited/i.test(r[lim]) ? Infinity : Number.isFinite(n) ? n : null;
     map.set(matchKey(r[ev]), { name: clean(r[ev]), limit, limitText: clean(r[lim]), type: clean(r[type]), size: clean(r[size]) });
+  }
+  for (const [name, limit] of Object.entries(LIMIT_OVERRIDES)) {
+    const mk = matchKey(name), info = map.get(mk);
+    map.set(mk, { name, type: '', size: '', ...info, limit, limitText: String(limit) });
   }
   return map;
 }
