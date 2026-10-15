@@ -50,6 +50,27 @@
   .blip.err { background: var(--ink-3); animation: none; }
   @keyframes blink { to { visibility: hidden; } }
 
+  /* ---------- Deadline ---------- */
+  .alertbar { background: var(--signal); color: #fff; border-bottom: 2px solid var(--ink); }
+  .alertbar[hidden], .countdown[hidden] { display: none; }
+  .alertbar .wrap { display: flex; align-items: center; gap: 14px; min-height: 44px; font: 700 13px "JetBrains Mono", monospace; letter-spacing: .06em; text-transform: uppercase; }
+  .alertbar p { flex: 1; margin: 0; padding: 10px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+  .alertbar .urgent { background: #fff; color: var(--signal); padding: 2px 6px; font-weight: 800; animation: blink 1.4s steps(2, start) infinite; }
+  .alertbar time { font-weight: 800; font-size: 15px; letter-spacing: 0; }
+  .alertbar button {
+    border: 0; border-left: 2px solid rgba(255,255,255,.45); background: transparent; color: #fff; cursor: pointer;
+    align-self: stretch; width: 44px; font: 400 26px/1 "JetBrains Mono", monospace;
+  }
+  .alertbar button:hover { background: var(--ink); color: var(--paper); }
+
+  .countdown { display: inline-flex; align-items: stretch; margin-top: 22px; border: 2px solid var(--ink); background: var(--card); box-shadow: 5px 5px 0 var(--shadow); }
+  .countdown .cd-label { background: var(--signal); color: #fff; padding: 10px 14px; display: flex; flex-direction: column; justify-content: center; font: 800 11px "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; }
+  .countdown .cd-label small { font-weight: 600; letter-spacing: .04em; opacity: .9; margin-top: 3px; }
+  .cd-unit { padding: 8px 16px 6px; border-left: 2px solid var(--ink); text-align: center; }
+  .cd-unit b { display: block; font: 800 40px/1 "JetBrains Mono", monospace; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .cd-unit span { font: 700 10px "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+  .countdown.done .cd-unit b { color: var(--ink-3); }
+
   /* ---------- Masthead ---------- */
   .masthead { padding: 44px 0 28px; display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: end; }
   .kicker { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-2); margin-bottom: 10px; }
@@ -296,6 +317,10 @@
     .score b { font-size: 28px; }
     .ctl { padding: 0 12px; }
     .ctl.sort-b { display: none; }
+    .countdown { display: flex; }
+    .countdown .cd-label { flex: 1; }
+    .cd-unit { padding: 8px 10px 6px; }
+    .cd-unit b { font-size: 28px; }
   }
   @media (max-width: 480px) {
     .wrap { padding: 0 16px; }
@@ -318,6 +343,12 @@
 </script>
 </head>
 <body data-view="signups">
+<div class="alertbar" id="alertbar" role="alert" hidden>
+  <div class="wrap">
+    <p><span class="urgent">Urgent</span><span>Sign-ups close at 12:00 AM, Oct 15</span><time id="abTime"></time></p>
+    <button id="abClose" type="button" aria-label="Dismiss">×</button>
+  </div>
+</div>
 <div class="topbar">
   <div class="wrap">
     <span class="live"><span class="blip" id="blip"></span><span id="status">Connecting</span></span>
@@ -330,6 +361,12 @@
     <div>
       <div class="kicker"><b>North Creek TSA</b>Live sign-up board</div>
       <h1>Tie<wbr>breakers<span>.</span></h1>
+      <div class="countdown" id="countdown" hidden>
+        <div class="cd-label"><span id="cdHead">Sign-ups close in</span><small>12:00 AM · Oct 15</small></div>
+        <div class="cd-unit"><b id="cdH">--</b><span>Hrs</span></div>
+        <div class="cd-unit"><b id="cdM">--</b><span>Min</span></div>
+        <div class="cd-unit"><b id="cdS">--</b><span>Sec</span></div>
+      </div>
     </div>
     <div class="scores">
       <div class="score"><b id="sEvents">--</b><span>Events</span></div>
@@ -888,9 +925,34 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) load
 window.addEventListener('resize', () => { if (events.length) render(); });
 document.fonts?.ready.then(() => { if (events.length) render(); });
 
+// Countdown to the deadline (midnight local time, start of Oct 15)
+const DEADLINE = new Date(2026, 9, 15, 0, 0, 0);
+const AB_KEY = 'alertbar-closed-' + DEADLINE.getTime();
+let abClosed = false;
+try { abClosed = localStorage.getItem(AB_KEY) === '1'; } catch {}
+$('abClose').addEventListener('click', () => {
+  abClosed = true;
+  $('alertbar').hidden = true;
+  try { localStorage.setItem(AB_KEY, '1'); } catch {}
+});
+function tickDeadline() {
+  const left = Math.max(0, DEADLINE - Date.now());
+  const s = Math.floor(left / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
+  const two = n => String(n).padStart(2, '0');
+  $('cdH').textContent = two(h);
+  $('cdM').textContent = two(m);
+  $('cdS').textContent = two(sec);
+  $('abTime').textContent = `${two(h)}:${two(m)}:${two(sec)} left`;
+  $('countdown').hidden = false;
+  $('countdown').classList.toggle('done', !left);
+  $('cdHead').textContent = left ? 'Sign-ups close in' : 'Sign-ups closed';
+  $('alertbar').hidden = abClosed || !left;
+}
+
+tickDeadline();
 load();
 setInterval(load, REFRESH_MS);
-setInterval(updateStatus, 1000);
+setInterval(() => { updateStatus(); tickDeadline(); }, 1000);
 </script>
 </body>
 </html>
