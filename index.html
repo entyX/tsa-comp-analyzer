@@ -71,7 +71,6 @@
   .cd-unit { padding: 8px 16px 6px; border-left: 2px solid var(--ink); text-align: center; }
   .cd-unit b { display: block; font: 800 40px/1 "JetBrains Mono", monospace; letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
   .cd-unit span { font: 700 10px "JetBrains Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
-  .countdown.done .cd-unit b { color: var(--ink-3); }
 
   /* ---------- Masthead ---------- */
   .masthead { padding: 44px 0 28px; display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: end; }
@@ -938,18 +937,69 @@ $('abClose').addEventListener('click', () => {
   try { localStorage.setItem(AB_KEY, '1'); } catch {}
 });
 new ResizeObserver(([e]) => document.documentElement.style.setProperty('--ab-h', e.target.offsetHeight + 'px')).observe($('alertbar'));
+// Once time is up the banner and timer go away; anyone watching it hit zero gets confetti
+let deadlineLive = null;
 function tickDeadline() {
-  const left = Math.max(0, DEADLINE - Date.now());
-  const s = Math.floor(left / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
+  const s = Math.max(0, Math.ceil((DEADLINE - Date.now()) / 1000));
+  if (!s) {
+    $('countdown').hidden = $('alertbar').hidden = true;
+    if (deadlineLive) confetti();
+    deadlineLive = false;
+    return;
+  }
+  deadlineLive = true;
+  const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
   const two = n => String(n).padStart(2, '0');
   $('cdH').textContent = two(h);
   $('cdM').textContent = two(m);
   $('cdS').textContent = two(sec);
   $('abTime').textContent = `${two(h)}:${two(m)}:${two(sec)} left`;
   $('countdown').hidden = false;
-  $('countdown').classList.toggle('done', !left);
-  $('cdHead').textContent = left ? 'Sign-ups close in' : 'Sign-ups closed';
-  $('alertbar').hidden = abClosed || !left;
+  $('alertbar').hidden = abClosed;
+}
+
+function confetti() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const cv = document.createElement('canvas');
+  cv.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:100';
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d'), dpr = devicePixelRatio || 1;
+  const W = cv.width = innerWidth * dpr, H = cv.height = innerHeight * dpr;
+  const colors = ['#ff4f00', '#ffe14d', '#141414', '#2f6bff', '#19b36b', '#ff4fa3'];
+  const bits = [];
+  // Two cannons from the bottom corners, plus a shower from the top
+  const g = .35 * dpr;
+  for (let i = 0; i < 260; i++) {
+    const side = i % 3, b = { w: (6 + Math.random() * 6) * dpr, h: (8 + Math.random() * 10) * dpr,
+      r: Math.random() * 6, vr: (Math.random() - .5) * .3, c: colors[i % colors.length], delay: 0 };
+    if (side === 2) {
+      Object.assign(b, { x: Math.random() * W, y: -20 * dpr, vx: (Math.random() - .5) * 2 * dpr, vy: (2 + Math.random() * 4) * dpr, delay: Math.random() * 60 });
+    } else {
+      // tilt 0.15–0.6 rad off vertical toward the middle, fast enough to reach 60–110% of the screen height
+      const dir = side ? -1 : 1, t = .15 + Math.random() * .45, v = Math.sqrt(2 * g * H * (.6 + Math.random() * .5)) * 1.15;
+      Object.assign(b, { x: side ? W : 0, y: H, vx: Math.sin(t) * v * dir, vy: -Math.cos(t) * v });
+    }
+    bits.push(b);
+  }
+  let frame = 0;
+  (function draw() {
+    ctx.clearRect(0, 0, W, H);
+    let alive = 0;
+    for (const b of bits) {
+      if (frame < b.delay) { alive++; continue; }
+      b.vy += g; b.vx *= .99; b.vy *= .99;
+      b.x += b.vx; b.y += b.vy; b.r += b.vr;
+      if (b.y > H + 40 * dpr) continue;
+      alive++;
+      ctx.save();
+      ctx.translate(b.x, b.y); ctx.rotate(b.r);
+      ctx.fillStyle = b.c;
+      ctx.fillRect(-b.w / 2, -b.h / 2 * Math.abs(Math.cos(b.r * 2)), b.w, b.h * Math.abs(Math.cos(b.r * 2)));
+      ctx.restore();
+    }
+    frame++;
+    if (alive && frame < 600) requestAnimationFrame(draw); else cv.remove();
+  })();
 }
 
 tickDeadline();
