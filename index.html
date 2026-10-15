@@ -721,8 +721,8 @@ function renderModal() {
   const where = nat ? nat.c.join(' / ') : 'Chapter sheet only';
 
   $('mIdx').innerHTML = `${esc(where)}${size ? `<span class="size">${sizeLabel(size)}</span>` : ''}${over ? '<span class="comp-tag">Tiebreaker</span>' : ''}`;
-  $('mTitle').textContent = title;
   const title = nat?.n || e?.name || info.name;
+  $('mTitle').textContent = title;
   $('mRubric').outerHTML = RUBRICS.has(openKey)
     ? `<a class="m-rubric" id="mRubric" ${rubricAttrs(openKey, title)}>${DL_ICON}<span>Download rubric</span></a>`
     : '<a class="m-rubric" id="mRubric" hidden></a>';
