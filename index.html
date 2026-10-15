@@ -160,46 +160,6 @@
   }
   .warn { color: var(--signal); font-weight: 800; }
 
-  /* ---------- Tabs ---------- */
-  .tabs { display: flex; gap: 8px; align-items: flex-end; }
-  .tab {
-    display: inline-flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: -2px;
-    border: 2px solid var(--ink); border-bottom: 0; background: var(--card); color: var(--ink);
-    font: 800 13px "JetBrains Mono", monospace; letter-spacing: .08em; text-transform: uppercase; padding: 11px 16px 12px;
-  }
-  .tab b { font-weight: 800; color: var(--ink-3); }
-  .tab:not(.on):hover { background: var(--paper); }
-  .tab.on { background: var(--ink); color: var(--paper); }
-  .tab.on b { color: var(--signal); }
-  body[data-view="catalog"] .signups-only, body[data-view="signups"] .catalog-only { display: none !important; }
-
-  /* ---------- Catalog (all TSA events) ---------- */
-  .cat-group { margin-bottom: 36px; }
-  .cat-head { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-  .cat-head h3 { margin: 0; font-size: 22px; font-weight: 900; text-transform: uppercase; font-variation-settings: "wdth" 90; letter-spacing: -.01em; }
-  .cat-head span { font: 700 12px "JetBrains Mono", monospace; color: var(--ink-3); }
-  .cat-head::after { content: ""; flex: 1; height: 2px; background: var(--ink); }
-  .cat-note { margin: -6px 0 14px; color: var(--ink-2); font-size: 14px; }
-  .ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
-  .ev {
-    display: flex; flex-direction: column; text-align: left; cursor: pointer; padding: 0; font: inherit; color: var(--ink);
-    background: var(--card); border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--shadow); transition: transform .1s, box-shadow .1s;
-  }
-  .ev:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--shadow); }
-  .ev-body { padding: 13px 14px 14px; flex: 1; }
-  .ev-meta { font: 600 10.5px "JetBrains Mono", monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-  .ev-meta .size { margin-left: 0; margin-right: 6px; }
-  .ev h4 { margin: 8px 0 6px; font-size: 17px; line-height: 1.08; font-weight: 850; text-transform: uppercase; font-variation-settings: "wdth" 80; }
-  .ev p { margin: 0; font-size: 13.5px; line-height: 1.45; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .ev-foot {
-    border-top: 2px solid var(--ink); padding: 7px 14px; display: flex; justify-content: space-between; gap: 10px;
-    font: 700 10.5px "JetBrains Mono", monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2);
-  }
-  .ev-foot .none { color: var(--ink-3); font-weight: 600; }
-  .ev.over .ev-foot { background: var(--signal); color: #fff; }
-  .ev.has .ev-foot { background: var(--ink); color: var(--paper); }
-  .source { font: 600 11px "JetBrains Mono", monospace; letter-spacing: .04em; color: var(--ink-3); padding: 0 0 56px; }
-  .source a { color: inherit; }
 
   .m-desc { padding: 14px 26px; border-bottom: 2px solid var(--ink); font-size: 15px; line-height: 1.55; color: var(--ink-2); background: var(--card); flex-shrink: 0; }
   .m-desc[hidden] { display: none; }
@@ -248,6 +208,13 @@
     border-top: 2px solid var(--ink); padding: 7px 14px; display: flex; justify-content: space-between;
     font: 600 10.5px "JetBrains Mono", monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2);
   }
+  .card-foot { align-items: center; }
+  .foot-r { display: flex; align-items: center; gap: 12px; }
+  .rubric {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; margin: -3px -6px -3px 0;
+    border: 1.5px solid var(--ink); color: var(--ink); text-decoration: none; font-weight: 800;
+  }
+  .rubric:hover { background: var(--ink); color: var(--paper); }
   .more { color: var(--signal); visibility: hidden; }
   .card.overflow .more { visibility: visible; }
 
@@ -263,7 +230,13 @@
   dialog.modal[open] { display: flex; flex-direction: column; animation: pop .16s ease-out; }
   dialog.modal::backdrop { background: rgba(10,10,10,.55); backdrop-filter: grayscale(1); }
   @keyframes pop { from { transform: translate(10px, 10px); opacity: 0; } }
-  .m-head { display: grid; grid-template-columns: 1fr auto; border-bottom: 2px solid var(--ink); background: var(--card); flex-shrink: 0; }
+  .m-rubric {
+    display: flex; align-items: center; gap: 8px; padding: 0 20px; border-left: 2px solid var(--ink); color: var(--ink); text-decoration: none;
+    font: 800 12px "JetBrains Mono", monospace; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .m-rubric[hidden] { display: none; }
+  .m-rubric:hover { background: var(--ink); color: var(--paper); }
+  .m-head { display: grid; grid-template-columns: 1fr auto auto; border-bottom: 2px solid var(--ink); background: var(--card); flex-shrink: 0; }
   .m-title { padding: 22px 26px 20px; min-width: 0; }
   .m-title .idx { font-size: 12px; }
   .m-title h2 {
@@ -303,6 +276,8 @@
     dialog.modal { width: 100vw; height: 100dvh; border: 0; box-shadow: none; }
     .m-title { padding: 16px 18px; }
     .m-close { width: 60px; }
+    .m-rubric { padding: 0 14px; }
+    .m-rubric span { display: none; }
     .m-stats { grid-template-columns: repeat(2, 1fr); }
     .m-stats div { padding: 10px 18px; }
     .m-stats div:nth-child(3) { border-left: 0; }
@@ -327,9 +302,6 @@
     .wrap { padding: 0 16px; }
     .board { grid-template-columns: 1fr; }
     .topbar .hide-sm { display: none; }
-    .tabs .tab { flex: 1; justify-content: center; padding: 10px 8px; font-size: 11.5px; }
-    #catFilters { flex-wrap: nowrap; overflow-x: auto; padding: 0 4px 6px 0; scrollbar-width: none; }
-    #catFilters .flt { flex-shrink: 0; }
   }
 </style>
 <!-- Vercel Web Analytics (only served on the Vercel deployment, so skip it elsewhere e.g. GitHub Pages) -->
@@ -343,7 +315,7 @@
   }
 </script>
 </head>
-<body data-view="signups">
+<body>
 <div class="alertbar" id="alertbar" role="alert" hidden>
   <div class="wrap">
     <p><span class="urgent">Urgent</span><span>Sign-ups close at 12:00 AM, Oct 15</span><time id="abTime"></time></p>
@@ -375,10 +347,6 @@
       <div class="score"><b id="sPeople">--</b><span>Students</span></div>
     </div>
   </header>
-  <nav class="tabs" aria-label="Views">
-    <button class="tab on" data-tab="signups" type="button">Sign-ups <b id="tSign">--</b></button>
-    <button class="tab" data-tab="catalog" type="button">All TSA events <b id="tAll">--</b></button>
-  </nav>
 </div>
 
 <div class="controls">
@@ -386,26 +354,12 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/></svg>
     <input id="q" type="search" placeholder="Find a student or event" autocomplete="off">
   </label>
-  <button class="ctl sort-a on signups-only" data-sort="az" type="button">A–Z</button>
-  <button class="ctl sort-b signups-only" data-sort="teams" type="button">Most teams</button>
+  <button class="ctl sort-a on" data-sort="az" type="button">A–Z</button>
+  <button class="ctl sort-b" data-sort="teams" type="button">Most teams</button>
   <button class="ctl go" id="refresh" type="button">Sync ↻</button>
 </div>
 
-<div class="wrap catalog-only">
-  <div class="filters" id="catFilters"></div>
-  <div class="filters" id="statFilters">
-    <button class="flt on" data-s="any" type="button"><span>Any status</span></button>
-    <button class="flt" data-s="signed" type="button"><span><i class="lvl m"></i>Has sign-ups</span><b id="sSigned">--</b></button>
-    <button class="flt" data-s="open" type="button"><span><i class="lvl"></i>No sign-ups</span><b id="sOpen">--</b></button>
-    <button class="flt" data-s="over" type="button"><span><i class="lvl c"></i>Over limit</span><b id="sOver">--</b></button>
-  </div>
-  <div class="filters" id="sizeFilters"></div>
-  <div class="note" id="catNote"></div>
-  <main id="catalog"></main>
-  <div class="source">Event list &amp; descriptions: <a href="https://tsaweb.org/competitions-programs/tsa/high-school-competitions" target="_blank" rel="noopener">tsaweb.org — High School Competitive Events</a> (2027 &amp; 2028 national conferences). Team sizes &amp; limits from the chapter sheet.</div>
-</div>
-
-<div class="wrap signups-only">
+<div class="wrap">
   <div class="filters" id="filters">
     <button class="flt on" data-f="all" type="button"><span>All events</span><b id="fAll">--</b></button>
     <button class="flt" data-f="competitive" type="button"><span><i class="lvl c"></i>Competitive <small>over state limit</small></span><b id="fCompetitive">--</b></button>
@@ -425,6 +379,7 @@
 <dialog class="modal" id="modal" aria-labelledby="mTitle">
   <div class="m-head">
     <div class="m-title"><div class="idx" id="mIdx"></div><h2 id="mTitle"></h2></div>
+    <a class="m-rubric" id="mRubric" hidden></a>
     <button class="m-close" id="mClose" type="button" aria-label="Close">×</button>
   </div>
   <div class="m-desc" id="mDesc" hidden></div>
@@ -507,11 +462,17 @@ const sizeShort = s => !s ? '' : s.max === 1 ? 'Solo' : s.min === s.max ? `${s.m
 // National TSA high school events (tsaweb.org, 2027/2028 guide): n = name, c = categories, d = description
 const NATIONAL = [{"n":"Animatronics","c":["STEM & the Arts"],"d":"To address the annual design challenge, participants exhibit and demonstrate their knowledge of mechanical and control systems by creating an animatronic device with a specific purpose (i.e., communicate an idea, entertain, demonstrate a concept, etc.) that includes sound, lights, and an appropriate surrounding environment (a display)."},{"n":"Architectural Design","c":["Architecture & Construction"],"d":"In response to the annual design challenge, participants develop a set of architectural plans and related materials, and construct both a physical and computer-generated model and virtual walkthrough to accurately depict their design. Semifinalists deliver a presentation and participate in an interview."},{"n":"Artificial Intelligence","c":["Computer Science & IT"],"d":"Applying leadership and 21st century skills, participants demonstrate knowledge of artificial intelligence (AI) concepts, models, and best practices by completing a test to qualify for semifinals. Semifinalist teams solve an onsite problem(s) using a generative artificial intelligence (GenAI) tool. Completed solutions are objectively measured to determine the best solution for the stated problem."},{"n":"Audio Podcasting","c":["Communications"],"d":"Participants use digital audio technology to create original content for a podcast piece that addresses the annual theme. The podcast must feature high level storytelling techniques, voice acting, and folly sound effects; the full entry must include documentation of the podcast development process and elements. Semifinalists participate in an interview."},{"n":"Automated Manufacturing Systems","c":["Computer Science & IT","Technology & Research"],"d":"Applying leadership and 21st century skills, participants collaborate to engineer and prototype an automated manufacturing system to solve a production problem. Teams analyze the prompt, build a sensor-based mechatronic solution, program the automation logic, document the mechanical and software design, and create instructions for judges to operate the system."},{"n":"Biotechnology Design","c":["Technology & Research"],"d":"Participants select a contemporary biotechnology problem that addresses the annual theme and demonstrates understanding of the topic through documented research, the development of a solution, a display (including an optional model or prototype), and an effective multimedia presentation. Semifinalists deliver a presentation and participate in an interview."},{"n":"Board Game Design","c":["STEM & the Arts"],"d":"Participants develop, build, and package a board game that focuses on a subject of their choice. Creative packaging, and the instructions, pieces, and cards associated with the pilot game will be evaluated. Semifinalists set up the game, demonstrate how the game is played, explain the game's features, and discuss the design process."},{"n":"Chapter Team","c":["Leadership"],"d":"Participants take a parliamentary procedure test to qualify for the semifinal round of competition. Semifinalists conduct an opening ceremony, items of business, parliamentary actions, and a closing ceremony."},{"n":"Children's Stories","c":["Communications"],"d":"In response to the annual theme, participants create an illustrated children's story of artistic, instructional, and social value, and submit documentation related to the development of the physical storybook. Semifinalists read their story aloud and participate in an interview."},{"n":"Computer-Aided Design (CAD), Architecture","c":["Architecture & Construction"],"d":"Participants use complex computer graphic skills, tools, and processes to respond to a design challenge in which they develop representations of architectural subjects, such as foundation and/or floor plans, and/or elevation drawings, and/or details of architectural ornamentation or cabinetry. The solution to the design challenge and participant answers in an interview are evaluated."},{"n":"Computer-Aided Design (CAD), Engineering","c":["Architecture & Construction"],"d":"Participants use complex computer graphic skills, tools, and processes to respond to a design challenge in which they develop three-dimensional representations of engineering subjects, such as a machine part, tool, device, or manufactured product. The solution to the design challenge and participant answers in an interview are evaluated."},{"n":"Cybersecurity","c":["Computer Science & IT"],"d":"Applying leadership and 21st century skills, participants respond to a cybersecurity challenge by identifying a breach in computer security via “Capture the Flag” games. Areas of challenge might include exploit development, digital puzzles, cryptography, reverse engineering, binary analysis, mobile security, etc. Participants must accurately address a series of on-site problems within a specified, limited amount of time."},{"n":"Data Science and Analytics","c":["Computer Science & IT"],"d":"Participants identify a societal issue, collect or compile data from various sources about the issue, and then produce documentation and a digital scientific poster about their findings. Semifinalists create a synopsis and digital visual representation of a data set provided in an onsite challenge."},{"n":"Debating Technological Issues","c":["Communications"],"d":"Participants research the annual topic and subtopics and prepare for a debate against a team from another chapter. Teams are instructed to take either the pro or con side of a selected subtopic, submit a summary of references, and use their research to support their assigned position. The quality of a team's debate determines semifinalists and finalists."},{"n":"Digital Video Production","c":["STEM & the Arts"],"d":"Participants develop and submit a digital video and a documentation portfolio (including such items as a storyboard, script, summary of references and sources, and equipment list) that reflects the annual theme. Semifinalists participate in an interview."},{"n":"Dragster Design","c":["Manufacturing & Transportation"],"d":"Participants design, draw, and construct a CO2-powered dragster that adheres to specifications, design and documentation requirements, and the annual theme. Semifinalists compete in a double-elimination race and participate in an interview."},{"n":"Drone Challenge (UAV)","c":["Manufacturing & Transportation"],"d":"Participants design, build, assemble, document, and test fly an open-source Unmanned Arial Vehicle (UAV) according to the stated annual theme/problem specifications. The required documentation portfolio must include elements such as a photographic log, wiring schematics, and a description of the programming software used. Semifinalists participate in an interview."},{"n":"Engineering Design","c":["STEM (General)"],"d":"Participants develop a solution to an annual theme that is based on a specific challenge noted by the National Academy of Engineering (NAE) in its compilation of the grand challenges for engineering in the 21st century. The solution will include a documentation portfolio, a display, and a model/prototype. Semifinalists deliver a presentation and participate in an interview."},{"n":"Extemporaneous Speech","c":["Leadership"],"d":"Participants select a technology-related or TSA topic from among three topic cards and prepare and give a three-to-five-minute speech that communicates their knowledge of the chosen topic. The quality of the speech determines advancement to the semifinalist level of competition, for which an identical competition procedure is followed to determine finalists."},{"n":"Fashion Design and Technology","c":["STEM & the Arts"],"d":"To address the annual theme, participants demonstrate expertise in fashion design principles by creating a wearable garment, garment patterns, and a documentation portfolio. Semifinalist teams present their garment designs (worn by team models), discuss the design process with evaluators, and respond to interview questions."},{"n":"Flight Endurance","c":["Manufacturing & Transportation"],"d":"Participants design, build, fly, and adjust (trim) a rubber-band powered model aircraft to make long endurance flights inside a contained airspace. Documentation (including elements such as attributes of the model design, drawings, and an analysis of the trim modifications), an inspection of the model and the required model flight box, and official times for two flights are aspects of the evaluation"},{"n":"Forensic Science","c":["Technology & Research"],"d":"Participants take a test of basic forensic science to qualify for the semifinal round of competition. Semifinalists examine a mock crime scene and demonstrate their knowledge of forensic science through crime scene analysis, with the findings synthesized in a written report/analysis."},{"n":"Future Technology Teacher","c":["Leadership"],"d":"Participants research a developing technology, prepare a video showing an application of the technology in the classroom, and create a lesson plan/activity that features the application and connects to the Standards for Technological and Engineering Literacy (STEL), as well as STEM initiatives and integration. Semifinalists demonstrate the lesson plan and answer questions about their presentation."},{"n":"Hybrid Racer XL","c":["Manufacturing & Transportation"],"d":"Hybrid Racer XL provides a hands-on opportunity for participants to apply science, technology, engineering, and mathematics (STEM) concepts - as well as leadership and 21st century skills such as creativity, teamwork, and problem-solving skills - as they design (according to annual requirements, if any), construct, and race a dual-powered (solar and battery) car."},{"n":"Interior Design","c":["Architecture & Construction"],"d":"Applying leadership and 21st century skills, participants develop a color sample and material design board(s) used by interior designers to plan an overall cohesive design based on an annual challenge. Participants must demonstrate an understanding of and aptitude for interior design, developing design boards, and presenting a design interpretation."},{"n":"Manufacturing Prototype","c":["Manufacturing & Transportation"],"d":"Participants design, fabricate, and use Computer Integrated Manufacturing (CIM) to create a product that addresses the annual theme. A documentation portfolio and the completed product prototype are submitted for evaluation. Semifinalists give a product “sales pitch” and demonstration."},{"n":"Music Production","c":["STEM & the Arts"],"d":"Participants produce an original musical piece that reﬂects the annual theme on the TSA website under Themes & Problems. The quality of the musical piece and required documentation (including elements such as a plan of work, self-evaluation, and a list of hardware, software, and instruments used) determines advancement to the semifinal level of competition, during which semifinalist participants are interviewed."},{"n":"On Demand Video","c":["STEM & the Arts"],"d":"Once participants receive the challenge details (required criteria, such as props and a line of dialogue) at the national TSA conference, they have 36 hours to produce a 60-second film that showcases video skills, tools, and communication processes. The quality of the completed video production determines the finalists."},{"n":"Photographic Technology","c":["STEM & the Arts"],"d":"Participants produce a photographic portfolio - demonstrating expertise in photo and imaging technology processes - to convey a message based on the annual theme. Semifinalists have 24 hours to complete a portfolio of photos (with required documentation) taken onsite at the national TSA conference. Finalists are determined based on the quality of the semifinal portfolio, the portfolio presentation, and interview responses."},{"n":"Prepared Presentation","c":["Leadership"],"d":"Participants deliver a three-to-five-minute oral presentation related to the current national TSA conference theme. Both semifinalists and finalists are determined based on the quality of the presentation and the appropriate use and content of the accompanying required slide deck."},{"n":"Promotional Design","c":["Communications"],"d":"Participants use computerized graphic communications layout and design skills to produce a promotional resource packet. The resource must address the annual theme/problem and include at least four printed publication items and required documentation. Semifinalists demonstrate publishing competency in an onsite technical design challenge."},{"n":"Robotics","c":["Manufacturing & Transportation"],"d":"Participants design, build, document, and test a robot assembled using open-sourced parts according to stated specifications and to meet the challenge of the yearly theme/problem."},{"n":"Software Development","c":["Computer Science & IT"],"d":"Participants use their knowledge of cutting-edge technologies, algorithm design, problem-solving principles, effective communication, and collaboration to design, implement, test, document, and present a software development project of educational or social value. Both semifinalists and finalists are determined based on the quality of the presentation and project."},{"n":"STEM Mass Media","c":["Communications"],"d":"In response to an annual theme, participants use written and verbal communication skills to convey a news story in both a video broadcast (preliminary round) and a digital written format (semifinal round). Participants must demonstrate a strong understanding of journalism etiquette and the common practices of the field of mass media."},{"n":"Structural Design and Engineering","c":["Architecture & Construction"],"d":"Participants apply the principles of structural engineering to design and construct a structure that complies with the annual challenge. An assessment of the required documentation and the destructive testing of the structure (to determine its design efficiency) determine both semifinalists and finalists."},{"n":"Technology Bowl","c":["Leadership"],"d":"Participants demonstrate their knowledge of TSA and concepts addressed in technology content standards by completing an objective test. Semifinalist teams participate in a question/response, head-to-head, team competition."},{"n":"Technology Problem Solving","c":["STEM (General)"],"d":"Participants use problem-solving skills to design and construct a finite solution to a challenge provided onsite at the conference. Solutions are evaluated at the end of 90 minutes using measures appropriate to the challenge, such as elapsed time, horizontal or vertical distance, and/or strength."},{"n":"Transportation Modeling","c":["Manufacturing & Transportation"],"d":"Participants research, design, and produce a scale model of a vehicle that complies with the annual design problem. A display for the model and a documentation portfolio – containing elements such as a description of the vehicle, photographs and commentary detailing the vehicle production, and technical illustrations – are required. Semifinalists participate in an interview."},{"n":"Video Game Design","c":["Computer Science & IT","STEM (General)"],"d":"Participants design, build, and launch an E-rated online video game – with accompanying required documentation - that addresses the annual theme. Semifinalists participate in an interview to demonstrate the knowledge and expertise they gained during the development of the game."},{"n":"Virtual Reality Simulation (VR)","c":["Computer Science & IT"],"d":"Participants use video and 3D computer graphics tools and design processes to create a two-to-three-minute VR visualization (accompanied by supporting documentation) that addresses the annual theme. Semifinalists deliver a presentation about their visualization and participate in an interview."},{"n":"Vlogging","c":["STEM & the Arts"],"d":"Vlogging encourages good storytelling, videography, and editing techniques to create a coherent series of creative work. Applying leadership and 21st century skills, participants use digital video technology to create original content that reflects an annual technology theme. Semifinalists complete an onsite challenge to produce additional video(s). Required criteria, such as props, lines of dialog, topics, etc., will be revealed at the semifinalist orientation meeting."},{"n":"Webmaster","c":["Computer Science & IT"],"d":"Participants design, build, and launch a website that addresses the annual challenge. Semifinalists participate in an interview to demonstrate the knowledge and expertise gained during the development of the website."}];
 const NATIONAL_KEYS = new Map(NATIONAL.map(ev => [matchKey(ev.n), ev]));
-const CATEGORIES = [...new Set(NATIONAL.flatMap(ev => ev.c))].sort();
-let catFilter = 'all';
-let statFilter = 'any';
-let sizeFilter = 0;       // 0 = any; otherwise events that allow a team of exactly this many people
-let view = 'signups';
+
+// Rubric PDFs in rubrics/<matchKey>.pdf (from the chapter's Google Drive folder)
+const RUBRICS = new Set(['animatronics', 'architecturaldesign', 'artificialintelligence', 'audiopodcasting', 'automatedmanufacturingsystems',
+  'biotechnologydesign', 'boardgamedesign', 'chapterteam', 'childrensstories', 'computeraideddesignarchitecture', 'computeraideddesignengineering',
+  'cybersecurity', 'datascienceandanalytics', 'debatingtechnologicalissues', 'digitalvideoproduction', 'dragsterdesign', 'dronechallenge',
+  'engineeringdesign', 'extemporaneousspeech', 'fashiondesignandtechnology', 'flightendurance', 'forensicscience', 'futuretechnologyteacher',
+  'hybridracerxl', 'interiordesign', 'manufacturingprototype', 'musicproduction', 'ondemandvideo', 'photographictechnology', 'preparedpresentation',
+  'promotionaldesign', 'robotics', 'softwaredevelopment', 'stemmassmedia', 'structuraldesignandengineering', 'technologybowl',
+  'technologyproblemsolving', 'transportationmodeling', 'videogamedesign', 'virtualrealitysimulation', 'vlogging', 'webmaster']);
+const DL_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="square" aria-hidden="true"><path d="M12 3v12M6 10l6 6 6-6M4 21h16"/></svg>';
+const rubricAttrs = (mk, name) => `href="rubrics/${mk}.pdf" download="${esc(name)} - Rubric.pdf" title="Download the ${esc(name)} rubric (PDF)"`;
 
 // Prefer the raw CSV export: the gviz feed guesses a type per column and blanks out
 // cells that don't fit (e.g. "2" in a "# of members" column it decided holds dates).
@@ -654,10 +615,7 @@ function markHit(name, q) {
 }
 
 function render() {
-  $('tSign').textContent = pad(events.length);
-  $('tAll').textContent = pad(NATIONAL.length);
   renderBoard();
-  renderCatalog();
   if (openKey) renderModal();
 }
 
@@ -729,7 +687,7 @@ function renderBoard() {
             </div>
           </div>`).join('')}
       </div>
-      <div class="card-foot"><span>${students} student${students === 1 ? '' : 's'}</span><span class="more">Scroll ↓</span></div>
+      <div class="card-foot"><span>${students} student${students === 1 ? '' : 's'}</span><span class="foot-r"><span class="more">Scroll ↓</span>${RUBRICS.has(e.mk) ? `<a class="rubric" ${rubricAttrs(e.mk, e.name)}>${DL_ICON}Download rubric</a>` : ''}</span></div>
     </article>`;
   }).join('');
 
@@ -763,7 +721,11 @@ function renderModal() {
   const where = nat ? nat.c.join(' / ') : 'Chapter sheet only';
 
   $('mIdx').innerHTML = `${esc(where)}${size ? `<span class="size">${sizeLabel(size)}</span>` : ''}${over ? '<span class="comp-tag">Tiebreaker</span>' : ''}`;
-  $('mTitle').textContent = nat?.n || e?.name || info.name;
+  $('mTitle').textContent = title;
+  const title = nat?.n || e?.name || info.name;
+  $('mRubric').outerHTML = RUBRICS.has(openKey)
+    ? `<a class="m-rubric" id="mRubric" ${rubricAttrs(openKey, title)}>${DL_ICON}<span>Download rubric</span></a>`
+    : '<a class="m-rubric" id="mRubric" hidden></a>';
   $('mDesc').hidden = !nat;
   $('mDesc').textContent = nat?.d || '';
   $('mStats').innerHTML = `
@@ -791,115 +753,10 @@ function renderModal() {
     </section>`).join('');
 }
 
-// ---------- All TSA events (catalog) ----------
-function catalogEntries() {
-  const byKey = new Map(events.map(e => [e.mk, e]));
-  const entry = (mk, name, cats, desc) => {
-    const e = byKey.get(mk);
-    const info = e?.info || limits.get(mk) || null;
-    const teams = e?.teams.length || 0;
-    const limit = info?.limit ?? null;
-    return { mk, name, cats, desc, info, teams, limit, size: sizeOf(info), over: limit != null && teams > limit };
-  };
-  const list = NATIONAL.map(ev => entry(matchKey(ev.n), ev.n, ev.c, ev.d));
-  // Events the chapter sheet lists (or students signed up for) that aren't national events
-  const extra = new Map();
-  for (const [mk, info] of limits) if (!NATIONAL_KEYS.has(mk)) extra.set(mk, info.name);
-  for (const e of events) if (!NATIONAL_KEYS.has(e.mk)) extra.set(e.mk, e.name);
-  for (const [mk, name] of extra) list.push(entry(mk, name, ['State & chapter only'], ''));
-  return list;
-}
-
-function renderCatalog() {
-  const q = norm($('q').value);
-  const all = catalogEntries();
-  const status = x => statFilter === 'any' || (statFilter === 'signed' ? x.teams > 0 : statFilter === 'open' ? x.teams === 0 : x.over);
-
-  const cats = [...CATEGORIES, ...(all.some(x => x.cats[0] === 'State & chapter only') ? ['State & chapter only'] : [])];
-  if (catFilter !== 'all' && !cats.includes(catFilter)) catFilter = 'all';
-  $('catFilters').innerHTML = [['all', 'All categories', all.length], ...cats.map(c => [c, c, all.filter(x => x.cats.includes(c)).length])]
-    .map(([v, label, n]) => `<button class="flt${catFilter === v ? ' on' : ''}" data-c="${esc(v)}" type="button"><span>${esc(label)}</span><b>${pad(n)}</b></button>`).join('');
-  $('sSigned').textContent = pad(all.filter(x => x.teams > 0).length);
-  $('sOpen').textContent = pad(all.filter(x => x.teams === 0).length);
-  $('sOver').textContent = pad(all.filter(x => x.over).length);
-
-  const fits = (x, n) => x.size && x.size.min <= n && n <= x.size.max;
-  const maxSize = Math.max(1, ...all.map(x => x.size?.max || 0));
-  if (sizeFilter > maxSize) sizeFilter = 0;
-  $('sizeFilters').innerHTML = `<span class="flt-label">Team of</span>` +
-    [[0, 'Any'], ...Array.from({ length: maxSize }, (_, i) => [i + 1, i === 0 ? '1 · Solo' : String(i + 1)])]
-      .map(([n, label]) => `<button class="flt${sizeFilter === n ? ' on' : ''}" data-z="${n}" type="button"><span>${label}</span>${n ? `<b>${pad(all.filter(x => fits(x, n)).length)}</b>` : ''}</button>`).join('');
-
-  const shown = all.filter(x => status(x) && (!sizeFilter || fits(x, sizeFilter)) && (catFilter === 'all' || x.cats.includes(catFilter))
-    && (!q || norm(x.name).includes(q) || norm(x.desc).includes(q) || x.cats.some(c => norm(c).includes(q))));
-  $('catNote').textContent = [
-    sizeFilter && `${shown.length} event${shown.length === 1 ? '' : 's'} allow a team of ${sizeFilter} (events with no size listed are hidden)`,
-    q && `${shown.length} event${shown.length === 1 ? '' : 's'} match “${$('q').value.trim()}”`,
-  ].filter(Boolean).join(' · ');
-
-  if (!shown.length) { $('catalog').innerHTML = '<div class="msg">No events match</div>'; return; }
-
-  // Group under each category heading (an event can sit in two categories)
-  const groups = cats.filter(c => catFilter === 'all' || c === catFilter)
-    .map(c => [c, shown.filter(x => x.cats.includes(c)).sort((a, b) => a.name.localeCompare(b.name))])
-    .filter(([, xs]) => xs.length);
-
-  $('catalog').innerHTML = groups.map(([c, xs]) => `
-    <section class="cat-group">
-      <div class="cat-head"><h3>${esc(c)}</h3><span>${pad(xs.length)}</span></div>
-      ${c === 'State & chapter only' ? '<p class="cat-note">Listed in the chapter sheet but not on the national TSA high school event list.</p>' : ''}
-      <div class="ev-grid">${xs.map(x => `
-        <button class="ev${x.over ? ' over' : x.teams ? ' has' : ''}" data-key="${esc(x.mk)}" type="button">
-          <div class="ev-body">
-            <div class="ev-meta">${x.size ? `<span class="size">${sizeLabel(x.size)}</span>` : ''}${x.info?.type && !(x.size && x.size.max === 1) ? esc(x.info.type) : ''}</div>
-            <h4>${markHit(x.name, q)}</h4>
-            ${x.desc ? `<p>${esc(x.desc)}</p>` : ''}
-          </div>
-          <div class="ev-foot">
-            ${x.teams ? `<span>${pad(x.teams)} team${x.teams === 1 ? '' : 's'} signed up</span>` : '<span class="none">No sign-ups yet</span>'}
-            <span>${x.limit === Infinity ? 'No cap' : x.limit != null ? `Limit ${x.limit}` : ''}</span>
-          </div>
-        </button>`).join('')}
-      </div>
-    </section>`).join('');
-}
-
-function setView(v) {
-  view = v === 'catalog' ? 'catalog' : 'signups';
-  document.body.dataset.view = view;
-  for (const t of document.querySelectorAll('[data-tab]')) t.classList.toggle('on', t.dataset.tab === view);
-  $('q').placeholder = view === 'catalog' ? 'Search all TSA events' : 'Find a student or event';
-  if (events.length || view === 'catalog') render();
-}
-
 $('board').addEventListener('click', ev => {
   if (!ev.target.closest('[data-open]')) return;
   openModal(ev.target.closest('.card').dataset.key);
 });
-$('catalog').addEventListener('click', ev => {
-  const tile = ev.target.closest('.ev');
-  if (tile) openModal(tile.dataset.key);
-});
-$('sizeFilters').addEventListener('click', ev => {
-  const b = ev.target.closest('[data-z]');
-  if (b) { sizeFilter = +b.dataset.z; renderCatalog(); }
-});
-$('catFilters').addEventListener('click', ev => {
-  const b = ev.target.closest('[data-c]');
-  if (b) { catFilter = b.dataset.c; renderCatalog(); }
-});
-for (const b of document.querySelectorAll('[data-s]')) {
-  b.addEventListener('click', () => {
-    statFilter = b.dataset.s;
-    for (const x of document.querySelectorAll('[data-s]')) x.classList.toggle('on', x === b);
-    renderCatalog();
-  });
-}
-for (const t of document.querySelectorAll('[data-tab]')) {
-  t.addEventListener('click', () => { location.hash = t.dataset.tab === 'catalog' ? 'all-events' : ''; setView(t.dataset.tab); });
-}
-window.addEventListener('hashchange', () => setView(location.hash === '#all-events' ? 'catalog' : 'signups'));
-setView(location.hash === '#all-events' ? 'catalog' : 'signups');
 
 $('mClose').addEventListener('click', () => $('modal').close());
 $('modal').addEventListener('click', ev => { if (ev.target === $('modal')) $('modal').close(); });
