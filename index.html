@@ -51,15 +51,17 @@
   @keyframes blink { to { visibility: hidden; } }
 
   /* ---------- Deadline ---------- */
-  .alertbar { background: var(--signal); color: #fff; border-bottom: 2px solid var(--ink); }
+  .alertbar { position: sticky; top: 0; z-index: 20; background: var(--signal); color: #fff; border-bottom: 2px solid var(--ink); }
   .alertbar[hidden], .countdown[hidden] { display: none; }
-  .alertbar .wrap { display: flex; align-items: center; gap: 14px; min-height: 44px; font: 700 13px "JetBrains Mono", monospace; letter-spacing: .06em; text-transform: uppercase; }
-  .alertbar p { flex: 1; margin: 0; padding: 10px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+  .alertbar .wrap { position: relative; min-height: 44px; font: 700 13px "JetBrains Mono", monospace; letter-spacing: .06em; text-transform: uppercase; }
+  .alertbar p { margin: 0; padding: 10px 48px; min-height: 44px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 12px; text-align: center; }
+  /* keep the sticky search bar below the banner */
+  body:has(.alertbar:not([hidden])) .controls { top: var(--ab-h, 0px); }
   .alertbar .urgent { background: #fff; color: var(--signal); padding: 2px 6px; font-weight: 800; animation: blink 1.4s steps(2, start) infinite; }
   .alertbar time { font-weight: 800; font-size: 15px; letter-spacing: 0; }
   .alertbar button {
     border: 0; border-left: 2px solid rgba(255,255,255,.45); background: transparent; color: #fff; cursor: pointer;
-    align-self: stretch; width: 44px; font: 400 26px/1 "JetBrains Mono", monospace;
+    position: absolute; top: 0; right: 0; bottom: 0; width: 44px; font: 400 26px/1 "JetBrains Mono", monospace;
   }
   .alertbar button:hover { background: var(--ink); color: var(--paper); }
 
@@ -935,6 +937,7 @@ $('abClose').addEventListener('click', () => {
   $('alertbar').hidden = true;
   try { localStorage.setItem(AB_KEY, '1'); } catch {}
 });
+new ResizeObserver(([e]) => document.documentElement.style.setProperty('--ab-h', e.target.offsetHeight + 'px')).observe($('alertbar'));
 function tickDeadline() {
   const left = Math.max(0, DEADLINE - Date.now());
   const s = Math.floor(left / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
