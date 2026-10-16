@@ -261,7 +261,7 @@
   .m-alert.over { background: var(--signal); color: #fff; }
   .m-alert.over b { color: #fff; }
   .m-body { flex: 1; overflow-y: auto; padding: 26px; scrollbar-width: thin; scrollbar-color: var(--ink) transparent; }
-  .m-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; align-items: start; }
+  .m-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 18px; align-items: stretch; }
   .m-team { background: var(--card); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--shadow); }
   .m-team header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--ink); padding: 10px 14px; }
   .m-team header b { font: 800 22px/1 "JetBrains Mono", monospace; letter-spacing: -.04em; }
@@ -273,17 +273,25 @@
   .m-team li mark { background: var(--hilite); color: inherit; padding: 0 2px; }
 
   @media (max-width: 760px) {
+    /* one scroll for the whole sheet instead of a cramped inner list; header stays pinned */
     dialog.modal { width: 100vw; height: 100dvh; border: 0; box-shadow: none; }
-    .m-title { padding: 16px 18px; }
+    dialog.modal[open] { display: block; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+    .m-head { position: sticky; top: 0; z-index: 2; }
+    .m-body { overflow: visible; }
+    .m-title { padding: 12px 16px; }
+    .m-title h2 { font-size: clamp(22px, 7vw, 32px); line-height: 1; }
+    .m-desc { padding: 12px 16px; font-size: 14px; }
+    .m-team li { padding: 10px 14px; }
     .m-close { width: 60px; }
     .m-rubric { padding: 0 14px; }
     .m-rubric span { display: none; }
-    .m-stats { grid-template-columns: repeat(2, 1fr); }
-    .m-stats div { padding: 10px 18px; }
-    .m-stats div:nth-child(3) { border-left: 0; }
-    .m-stats div:nth-child(n+3) { border-top: 2px solid var(--ink); }
-    .m-body { padding: 18px; }
-    .m-alert { padding: 10px 18px; }
+    .m-stats div { padding: 10px 10px 8px; }
+    .m-stats b { font-size: 22px; }
+    .m-stats span { font-size: 9px; letter-spacing: .06em; }
+    .m-body { padding: 16px 16px 32px; }
+    .m-grid { grid-template-columns: 1fr; gap: 14px; }
+    .m-alert { padding: 10px 16px; }
+    .m-alert p { font-size: 14px; }
   }
 
   @media (max-width: 760px) {
@@ -302,6 +310,11 @@
     .wrap { padding: 0 16px; }
     .board { grid-template-columns: 1fr; }
     .topbar .hide-sm { display: none; }
+    .countdown { flex-wrap: wrap; }
+    .countdown .cd-label { flex-basis: 100%; flex-direction: row; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .cd-unit { flex: 1; }
+    .cd-unit:nth-child(2) { border-left: 0; }
+    .cd-unit b { font-size: 26px; }
   }
 </style>
 <!-- Vercel Web Analytics (only served on the Vercel deployment, so skip it elsewhere e.g. GitHub Pages) -->
@@ -318,7 +331,7 @@
 <body>
 <div class="alertbar" id="alertbar" role="alert" hidden>
   <div class="wrap">
-    <p><span class="urgent">Urgent</span><span>Sign-ups close at 12:00 AM, Oct 15</span><time id="abTime"></time></p>
+    <p><span class="urgent">Deadline</span><span>NCTSA tiebreakers due Nov 29, 11:59 PM</span><time id="abTime"></time></p>
     <button id="abClose" type="button" aria-label="Dismiss">×</button>
   </div>
 </div>
@@ -335,7 +348,8 @@
       <div class="kicker"><b>North Creek TSA</b>Live sign-up board</div>
       <h1>Tie<wbr>breakers<span>.</span></h1>
       <div class="countdown" id="countdown" hidden>
-        <div class="cd-label"><span id="cdHead">Sign-ups close in</span><small>12:00 AM · Oct 15</small></div>
+        <div class="cd-label"><span>NCTSA tiebreakers due in</span><small>11:59 PM · Nov 29</small></div>
+        <div class="cd-unit"><b id="cdD">--</b><span>Days</span></div>
         <div class="cd-unit"><b id="cdH">--</b><span>Hrs</span></div>
         <div class="cd-unit"><b id="cdM">--</b><span>Min</span></div>
         <div class="cd-unit"><b id="cdS">--</b><span>Sec</span></div>
@@ -783,8 +797,8 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) load
 window.addEventListener('resize', () => { if (events.length) render(); });
 document.fonts?.ready.then(() => { if (events.length) render(); });
 
-// Countdown to the deadline (midnight local time, start of Oct 15)
-const DEADLINE = new Date(2026, 9, 15, 0, 0, 0);
+// Countdown to the NCTSA tiebreakers deadline (11:59 PM local time, Nov 29)
+const DEADLINE = new Date(2026, 10, 29, 23, 59, 0);
 const AB_KEY = 'alertbar-closed-' + DEADLINE.getTime();
 let abClosed = false;
 try { abClosed = localStorage.getItem(AB_KEY) === '1'; } catch {}
@@ -805,12 +819,13 @@ function tickDeadline() {
     return;
   }
   deadlineLive = true;
-  const h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60, sec = s % 60;
+  const d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60, sec = s % 60;
   const two = n => String(n).padStart(2, '0');
+  $('cdD').textContent = two(d);
   $('cdH').textContent = two(h);
   $('cdM').textContent = two(m);
   $('cdS').textContent = two(sec);
-  $('abTime').textContent = `${two(h)}:${two(m)}:${two(sec)} left`;
+  $('abTime').textContent = `${d ? d + 'd ' : ''}${two(h)}:${two(m)}:${two(sec)} left`;
   $('countdown').hidden = false;
   $('alertbar').hidden = abClosed;
 }
