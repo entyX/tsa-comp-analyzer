@@ -422,7 +422,34 @@ let openKey = null;       // event shown in the modal
 const LIMITS_GID = '1819135025';
 let limits = new Map();   // matchKey -> { limit, type, size }
 // Per-chapter limits that override whatever the sheet says
-const LIMIT_OVERRIDES = { 'Structural Design and Engineering': 5 };
+const LIMIT_OVERRIDES = {
+  'Structural Design and Engineering': 5,
+  'Artificial Intelligence (AI)': 4,
+  'Architectural Design': 4,
+  'Audio Podcasting': 4,
+  'Automated Manufacturing Systems': 4,
+  'CAD 2D, Architecture': 5,
+  'CAD 3D, Engineering': 4,
+  'Cybersecurity': 3,
+  'Debating Technology Issues': 3,
+  'Digital Video Production': 4,
+  'Extemporaneous Speech': 3,
+  'Flight Endurance': 4,
+  'Forensic Science': 4,
+  'Future Technology Teacher': 4,
+  'Hybrid Racer XL': 4,
+  'Interior Design': 4,
+  'On Demand Video': 3,
+  'Promotional Design': 4,
+  'Robotics': 4,
+  'Software Development': 4,
+  'STEM Mass Media': 3,
+  'Technology Problem Solving': 3,
+  'Transportation Modeling': 5,
+  'Video Game Design': 4,
+  'Virtual Reality Visualization (VR)': 4,
+  'Vlogging': 5,
+};
 
 // Competitive = more teams than the state limit (tiebreakers needed),
 // uncontested = a single team, contested = everything in between.
